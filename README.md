@@ -56,8 +56,12 @@ Mở terminal khác:
 ```powershell
 cd C:\dev\internal-helpdesk\client
 npm install
+Copy-Item .env.example .env
 npm run dev
 ```
+
+`VITE_API_URL` trong `client/.env` phải trỏ tới backend, mặc định là
+`http://localhost:3000/api`.
 
 ## API hiện có
 
@@ -67,6 +71,7 @@ npm run dev
 | GET | `/api/auth/me` | Đã đăng nhập |
 | GET | `/api/categories` | Đã đăng nhập |
 | POST | `/api/categories` | Admin |
+| GET | `/api/dashboard/statistics` | Đã đăng nhập; thống kê theo phạm vi quyền |
 | POST | `/api/tickets` | Đã đăng nhập |
 | GET | `/api/tickets` | Employee xem của mình; Admin xem tất cả |
 | GET | `/api/tickets/:id` | Chủ ticket hoặc Admin |

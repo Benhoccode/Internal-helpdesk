@@ -72,3 +72,37 @@ mốc, thay vì chỉ nhìn vào kết quả cuối cùng.
 2. Viết test có thể chạy lại bằng test runner thay cho smoke test thủ công.
 3. Kết nối frontend: login, auth context và protected routes.
 4. Làm trang danh sách/tạo/chi tiết ticket trước khi chăm chút giao diện.
+
+## 2026-08-05 - Frontend MVP
+
+### Đã làm
+
+- Chuyển năm màn hình Stitch thành design system responsive dùng chung.
+- Thêm React Router, Lucide icons, AuthProvider, protected routes và JWT session.
+- Kết nối giao diện Login với `/auth/login` và `/auth/me`.
+- Xây App Shell gồm sidebar, header, thông tin tài khoản và đăng xuất.
+- Xây Dashboard, danh sách ticket, bộ lọc/phân trang, tạo ticket, chi tiết,
+  bình luận, lịch sử trạng thái và điều khiển dành riêng cho Admin.
+- Thêm `GET /api/dashboard/statistics`; Employee nhận số liệu ticket của mình,
+  Admin nhận số liệu toàn hệ thống.
+- Các chức năng chưa có backend như upload, thông báo, SLA và quên mật khẩu
+  không được giả lập trong MVP.
+
+### Quyết định giao diện
+
+- Thống nhất thuật ngữ “Yêu cầu hỗ trợ” và mã hiển thị `#TK-0001`.
+- Dùng font sans-serif, màu xanh `#2563EB`, nền sáng và card bo góc 12px.
+- Responsive sidebar chuyển thành navigation drawer trên màn hình nhỏ.
+- Knowledge Base hiện là placeholder rõ ràng cho mốc tiếp theo.
+
+### Kiểm tra
+
+- Backend TypeScript build thành công.
+- Frontend ESLint và production build thành công.
+- AST validator của skill xác nhận AppShell, StatusBadge và AuthProvider có
+  props type-safe, không chứa màu hex hardcode trong component.
+- Kiểm tra trình duyệt ở kích thước 1440 x 1000 xác nhận Login hiển thị đúng.
+- Frontend dev server trả HTTP `200`; đăng nhập seed và Dashboard API hoạt động.
+- `npm audit` còn 2 cảnh báo mức moderate từ React Router 6.30.4. Cảnh báo liên
+  quan SSR hydration/open redirect; ứng dụng hiện là client-only SPA và chỉ điều
+  hướng tới pathname nội bộ. Chưa có bản tương thích không bị npm cảnh báo.
