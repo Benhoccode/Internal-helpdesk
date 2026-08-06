@@ -68,7 +68,7 @@ export async function listTickets(request: Request, response: Response) {
       : {}),
   };
 
-  const [tickets, total] = await prisma.$transaction([
+  const [tickets, total] = await Promise.all([
     prisma.ticket.findMany({
       where,
       orderBy: { createdAt: "desc" },

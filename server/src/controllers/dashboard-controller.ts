@@ -12,7 +12,7 @@ export async function getDashboardStatistics(
       : {};
 
   const [total, open, inProgress, resolved, closed, grouped, recentTickets] =
-    await prisma.$transaction([
+    await Promise.all([
       prisma.ticket.count({ where: accessFilter }),
       prisma.ticket.count({
         where: { ...accessFilter, status: TicketStatus.OPEN },

@@ -39,7 +39,7 @@ export async function listArticles(request: Request, response: Response) {
       : {}),
   };
 
-  const [articles, total] = await prisma.$transaction([
+  const [articles, total] = await Promise.all([
     prisma.article.findMany({
       where,
       orderBy: [{ publishedAt: "desc" }, { updatedAt: "desc" }],

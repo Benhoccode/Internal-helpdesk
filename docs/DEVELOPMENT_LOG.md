@@ -136,3 +136,25 @@ mốc, thay vì chỉ nhìn vào kết quả cuối cùng.
   nhận `404`.
 - Sau khi Admin xuất bản, Employee tìm thấy bài viết.
 - Bài smoke test đã xóa; database còn đúng 2 bài seed.
+
+## 2026-08-06 - Repeatable API smoke test
+
+### Đã làm
+
+- Thêm `npm run test:smoke` dùng Node assert, fetch và server cổng ngẫu nhiên.
+- Bao phủ 12 kiểm tra: health, login sai/đúng, `/auth/me`, tạo ticket, phân quyền
+  cập nhật, status history, comment, dashboard, draft visibility, quyền tạo bài
+  và xuất bản Knowledge Base.
+- Dùng UUID trong tiêu đề để test có thể chạy nhiều lần hoặc song song mà không
+  phụ thuộc id cố định.
+- Cleanup ticket và article trong `finally`; database được xác nhận còn 0 ticket
+  và 2 bài seed sau khi chạy.
+
+### Kết quả
+
+- Tất cả smoke test đạt.
+- Các query chỉ đọc độc lập chạy bằng `Promise.all`; transaction vẫn chỉ dùng
+  cho thao tác ghi cần tính nguyên tử. `pg` vẫn phát một deprecation warning từ
+  bên trong `@prisma/adapter-pg` sau khi test nhưng không làm test hoặc cleanup
+  thất bại; cần kiểm tra lại khi nâng Prisma/pg.
+- Tiến độ sẵn sàng bàn giao được cập nhật thành 86% trong `PROJECT_STATUS.md`.

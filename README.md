@@ -63,6 +63,19 @@ npm run dev
 `VITE_API_URL` trong `client/.env` phải trỏ tới backend, mặc định là
 `http://localhost:3000/api`.
 
+## Kiểm thử
+
+Sau khi PostgreSQL đã migrate và seed, chạy bộ kiểm thử tích hợp:
+
+```powershell
+cd C:\dev\internal-helpdesk\server
+npm run test:smoke
+```
+
+Test khởi động API trên một cổng ngẫu nhiên, kiểm tra auth, phân quyền, ticket,
+comment, dashboard và Knowledge Base. Mọi ticket/bài viết tạm được xóa trong
+`finally`, kể cả khi một assertion thất bại.
+
 ## API hiện có
 
 | Method | Endpoint | Quyền |
@@ -86,3 +99,4 @@ Danh sách ticket hỗ trợ `status`, `priority`, `categoryId`, `search`, `page
 và `limit` dưới dạng query parameters.
 
 Xem lịch sử triển khai tại [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md).
+Tiến độ bàn giao được theo dõi tại [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md).
