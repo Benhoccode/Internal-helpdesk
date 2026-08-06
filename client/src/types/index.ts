@@ -1,6 +1,7 @@
 export type UserRole = 'EMPLOYEE' | 'ADMIN'
 export type TicketStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
 export type TicketPriority = 'LOW' | 'MEDIUM' | 'HIGH'
+export type ArticleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
 
 export interface User {
   id: number
@@ -77,4 +78,23 @@ export interface DashboardStatistics {
   closed: number
   byCategory: Array<{ id: number; name: string; count: number }>
   recentTickets: Ticket[]
+}
+
+export interface ArticleCategoryLink {
+  categoryId: number
+  category: Category
+}
+
+export interface Article {
+  id: number
+  title: string
+  slug: string
+  content: string
+  status: ArticleStatus
+  authorId: number
+  author: UserSummary
+  categoryLinks: ArticleCategoryLink[]
+  publishedAt: string | null
+  createdAt: string
+  updatedAt: string
 }

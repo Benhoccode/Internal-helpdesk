@@ -72,6 +72,10 @@ npm run dev
 | GET | `/api/categories` | Đã đăng nhập |
 | POST | `/api/categories` | Admin |
 | GET | `/api/dashboard/statistics` | Đã đăng nhập; thống kê theo phạm vi quyền |
+| GET | `/api/articles` | Employee thấy bài published; Admin thấy tất cả |
+| GET | `/api/articles/:slug` | Theo quyền hiển thị bài viết |
+| POST | `/api/articles` | Admin |
+| PATCH | `/api/articles/:slug` | Admin |
 | POST | `/api/tickets` | Đã đăng nhập |
 | GET | `/api/tickets` | Employee xem của mình; Admin xem tất cả |
 | GET | `/api/tickets/:id` | Chủ ticket hoặc Admin |

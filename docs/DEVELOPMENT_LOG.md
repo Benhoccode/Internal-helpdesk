@@ -106,3 +106,33 @@ mốc, thay vì chỉ nhìn vào kết quả cuối cùng.
 - `npm audit` còn 2 cảnh báo mức moderate từ React Router 6.30.4. Cảnh báo liên
   quan SSR hydration/open redirect; ứng dụng hiện là client-only SPA và chỉ điều
   hướng tới pathname nội bộ. Chưa có bản tương thích không bị npm cảnh báo.
+
+## 2026-08-06 - Knowledge Base hoàn chỉnh
+
+### Đã làm
+
+- Thêm API lấy danh sách, tìm kiếm, lọc, phân trang và xem chi tiết bài viết.
+- Thêm API tạo/cập nhật bài viết dành cho Admin, tự sinh slug không dấu và xử
+  lý trùng slug.
+- Bài viết hỗ trợ nhiều category qua bảng nối `ArticleCategory`.
+- Seed hai hướng dẫn nội bộ đã xuất bản về VPN và cài đặt phần mềm.
+- Thay placeholder Knowledge Base bằng danh sách card, tìm kiếm và lọc category.
+- Thêm trang đọc bài viết, quản lý bài viết, tạo/chỉnh sửa và chọn nhiều category.
+- Thêm `AdminRoute`; Employee không thể mở route quản lý ngay cả khi nhập URL.
+
+### Quy tắc nghiệp vụ
+
+- Employee chỉ nhìn thấy và đọc bài có trạng thái `PUBLISHED`.
+- Admin có thể quản lý `DRAFT`, `PUBLISHED`, `ARCHIVED`.
+- MVP không xóa bài viết qua API; dùng `ARCHIVED` để giữ lịch sử nội dung.
+- Slug được giữ ổn định khi đổi tiêu đề để các liên kết cũ không bị hỏng.
+- `publishedAt` được đặt ở lần xuất bản đầu tiên và không bị ghi đè khi chỉnh sửa.
+
+### Kiểm tra
+
+- Backend và frontend production build thành công; frontend ESLint sạch.
+- AST validator xác nhận ArticleCard và AdminRoute có props type-safe.
+- Admin tạo draft thành công; Employee tìm kiếm nhận 0 kết quả và đọc trực tiếp
+  nhận `404`.
+- Sau khi Admin xuất bản, Employee tìm thấy bài viết.
+- Bài smoke test đã xóa; database còn đúng 2 bài seed.
