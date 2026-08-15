@@ -21,3 +21,6 @@ dist/
 Thumbs.db
 
 server/src/generated/prisma/
+
+# Local project notes and internship materials
+docs/
