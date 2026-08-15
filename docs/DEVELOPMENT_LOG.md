@@ -1,5 +1,36 @@
 # Development log
 
+## 2026-08-15 - Chuẩn bị bàn giao và triển khai
+
+### Đã làm
+
+- Khóa phiên bản Node.js 24 cho backend và thêm `npm run db:deploy` để chạy Prisma
+  migration không tương tác trên môi trường production.
+- Thêm Render Blueprint tại `render.yaml`: root backend, build/start command,
+  health check, region Singapore và biến môi trường an toàn.
+- Thêm `client/vercel.json` để các route React Router hoạt động khi refresh hoặc
+  mở trực tiếp trên Vercel.
+- Viết tài liệu kiến trúc gồm sơ đồ hệ thống, ERD, quyết định chuẩn hóa và ma trận
+  phân quyền.
+- Viết hướng dẫn deploy từng bước, checklist production và bảng xử lý lỗi.
+- Viết kịch bản demo 5–7 phút cùng phương án dự phòng.
+- Viết khung báo cáo thực tập, giới hạn nội dung ở các chức năng đã triển khai.
+- Chuẩn hóa README thành điểm bắt đầu duy nhất cho setup, QA và tài liệu bàn giao.
+
+### Quyết định
+
+- Chọn Vercel cho React SPA, Render cho Express API và PostgreSQL cloud để phạm vi
+  vận hành phù hợp một bản demo thực tập.
+- Không tính dự án là 100% bàn giao khi chưa có URL production được kiểm tra thật.
+- Không thêm upload, email, SLA hoặc AI vào phút cuối vì chúng nằm ngoài MVP và có
+  thể làm giảm độ ổn định của các luồng đã hoàn chỉnh.
+
+### Kiểm tra cuối
+
+- Chạy lại Prisma validate/migration, backend build và 12 API smoke test.
+- Chạy lại frontend ESLint và production build.
+- Kiểm tra JSON/YAML triển khai, Git diff và bảo đảm các file bí mật không được stage.
+
 Tài liệu này ghi lại những phần Codex đã triển khai để có thể review theo từng
 mốc, thay vì chỉ nhìn vào kết quả cuối cùng.
 

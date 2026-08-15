@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: internal-helpdesk-api
+    runtime: node
+    region: singapore
+    rootDir: server
+    buildCommand: npm ci && npm run build
+    startCommand: npm run db:deploy && npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.1
+      - key: DATABASE_URL
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 1d
