@@ -51,6 +51,7 @@ Cấu hình được khai báo sẵn:
 | Trường | Giá trị |
 | --- | --- |
 | Root directory | `server` |
+| Instance type | `Free` |
 | Build command | `npm ci && npm run build` |
 | Start command | `npm run db:deploy && npm start` |
 | Health check | `/api/health` |
