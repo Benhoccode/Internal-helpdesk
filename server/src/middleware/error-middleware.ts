@@ -1,5 +1,6 @@
 import type { ErrorRequestHandler, RequestHandler } from "express";
 import { ZodError } from "zod";
+import { MulterError } from "multer";
 import { AppError } from "../utils/app-error.js";
 
 export const notFoundHandler: RequestHandler = (request, _response, next) => {
@@ -12,6 +13,10 @@ export const errorHandler: ErrorRequestHandler = (
   response,
   _next,
 ) => {
+  if (error instanceof MulterError) {
+    response.status(400).json({ message: "Tệp không hợp lệ: tối đa 5 tệp, mỗi tệp 10 MB; trường upload phải là files." });
+    return;
+  }
   if (error instanceof ZodError) {
     response.status(400).json({
       message: "Request data is invalid",

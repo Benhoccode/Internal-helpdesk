@@ -1,0 +1,13 @@
+.attachment-panel{padding:24px}
+.attachment-panel h2{margin:0 0 12px}
+.attachment-panel p{line-height:1.5}
+.attachment-hint,.attachment-list small{color:var(--muted,#64748b);font-size:.85rem}
+.attachment-list{list-style:none;padding:0;margin:18px 0}
+.attachment-list li{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--border,#e2e8f0)}
+.attachment-list li>div{min-width:0;overflow-wrap:anywhere}
+.attachment-list small{display:block;margin-top:6px}
+.attachment-panel button{background:#2563eb;color:white;border:0;border-radius:8px;padding:10px 16px;cursor:pointer;flex-shrink:0}
+.attachment-panel button:disabled{opacity:.6;cursor:wait}
+.attachment-form{display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin-top:20px}
+.attachment-form input{max-width:100%}
+@media(max-width:600px){.attachment-list li{align-items:flex-start;flex-direction:column}}

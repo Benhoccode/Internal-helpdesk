@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { addTicketComment, getCategories, getTicket, updateTicket } from '../api/ticket-api'
 import { StatusBadge } from '../components/ui/StatusBadge'
+import { TicketAttachments } from '../components/TicketAttachments'
 import { priorityLabels, statusLabels } from '../data/navigation'
 import { useAuth } from '../hooks/use-auth'
 import type { Category, Ticket, TicketPriority, TicketStatus } from '../types'
@@ -77,6 +78,7 @@ export function TicketDetailPage() {
             <div className="ticket-description"><h3>Mô tả</h3><p>{ticket.description}</p></div>
           </article>
 
+          <TicketAttachments key={ticket.id} ticketId={ticket.id} />
           <article className="panel activity-panel">
             <h2><MessageSquare size={22} /> Hoạt động & Bình luận</h2>
             <div className="comments-list">

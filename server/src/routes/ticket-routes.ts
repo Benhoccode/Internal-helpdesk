@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { attachmentRouter } from "./attachment-routes.js";
 import {
   addComment,
   createTicket,
@@ -14,6 +15,7 @@ import { asyncHandler } from "../utils/async-handler.js";
 export const ticketRouter = Router();
 
 ticketRouter.use(authenticate);
+ticketRouter.use("/:id/attachments", attachmentRouter);
 ticketRouter.post("/", asyncHandler(createTicket));
 ticketRouter.get("/", asyncHandler(listTickets));
 ticketRouter.get("/:id", asyncHandler(getTicket));
