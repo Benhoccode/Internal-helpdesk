@@ -4,6 +4,8 @@ import {
   FilePenLine,
   LayoutDashboard,
   ListChecks,
+  Users,
+  KeyRound,
   type LucideIcon,
 } from 'lucide-react'
 import type { UserRole } from '../types'
@@ -19,6 +21,8 @@ export const navigationItems: NavigationItem[] = [
   { label: 'Bảng điều khiển', to: '/', icon: LayoutDashboard },
   { label: 'Danh sách yêu cầu', to: '/tickets', icon: ListChecks },
   { label: 'Tạo yêu cầu', to: '/tickets/new', icon: CirclePlus },
+  { label: 'Quản lý tài khoản', to: '/users', icon: Users, roles: ['ADMIN'] },
+  { label: 'Đổi mật khẩu', to: '/account/password', icon: KeyRound },
   { label: 'Cơ sở kiến thức', to: '/knowledge', icon: BookOpen },
   {
     label: 'Quản lý bài viết',

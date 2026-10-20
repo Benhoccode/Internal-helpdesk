@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/use-auth'
 
 interface LoginLocationState {
   readonly from?: string
+  readonly passwordChanged?: boolean
 }
 
 export function LoginPage() {
@@ -51,6 +52,7 @@ export function LoginPage() {
       </section>
 
       <form className="login-card" onSubmit={handleSubmit}>
+        {(location.state as LoginLocationState | null)?.passwordChanged && <p role="status">Đã đổi mật khẩu. Hãy đăng nhập bằng mật khẩu mới.</p>}
         <label htmlFor="email">Email</label>
         <div className="input-with-icon">
           <Mail size={19} />

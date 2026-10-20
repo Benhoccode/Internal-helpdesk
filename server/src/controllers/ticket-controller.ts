@@ -6,6 +6,8 @@ import {
   type Prisma,
 } from "../generated/prisma/client.js";
 import { AppError } from "../utils/app-error.js";
+import { assertStatusTransition } from "../services/ticket-workflow.js";
+import { notifyTicket } from "../services/notification-service.js";
 import {
   ensureCategoryExists,
   ensureValidAssignee,
@@ -40,6 +42,7 @@ export async function createTicket(request: Request, response: Response) {
       },
     });
 
+    await notifyTicket(transaction, createdTicket, request.user!.id, `Yêu cầu mới #${createdTicket.id}: ${createdTicket.title}`, true);
     return transaction.ticket.findUniqueOrThrow({
       where: { id: createdTicket.id },
       include: ticketDetailInclude,
@@ -109,6 +112,7 @@ export async function updateTicket(request: Request, response: Response) {
   if (!currentTicket) {
     throw new AppError(404, "Ticket not found");
   }
+  assertStatusTransition(currentTicket.status, input.status);
 
   if (input.categoryId !== undefined) await ensureCategoryExists(input.categoryId);
   if (input.assigneeId !== undefined && input.assigneeId !== null) {
@@ -120,13 +124,14 @@ export async function updateTicket(request: Request, response: Response) {
   const { note: _note, ...ticketFields } = input;
 
   const ticket = await prisma.$transaction(async (transaction) => {
-    await transaction.ticket.update({
-      where: { id },
+    const changed = await transaction.ticket.updateMany({
+      where: { id, updatedAt: currentTicket.updatedAt },
       data: {
         ...ticketFields,
         resolvedAt: resolvedAtForStatus(currentTicket.status, input.status),
       },
     });
+    if (changed.count !== 1) throw new AppError(409, "Yêu cầu vừa được cập nhật bởi người khác. Hãy tải lại trang.");
 
     if (statusChanged) {
       await transaction.ticketStatusHistory.create({
@@ -138,6 +143,16 @@ export async function updateTicket(request: Request, response: Response) {
           note: input.note,
         },
       });
+    }
+
+    const assignmentChanged = input.assigneeId !== undefined && input.assigneeId !== currentTicket.assigneeId;
+    if (statusChanged || assignmentChanged) {
+      const labels = { OPEN: "Đang mở", IN_PROGRESS: "Đang xử lý", RESOLVED: "Đã giải quyết", CLOSED: "Đã đóng" };
+      await notifyTicket(transaction,
+        { ...currentTicket, assigneeId: input.assigneeId === undefined ? currentTicket.assigneeId : input.assigneeId },
+        request.user!.id,
+        `Yêu cầu #${id}: ${statusChanged ? `trạng thái → ${labels[input.status!]}` : ""}${statusChanged && assignmentChanged ? "; " : ""}${assignmentChanged ? "thay đổi người xử lý" : ""}`,
+      );
     }
 
     return transaction.ticket.findUniqueOrThrow({
@@ -152,9 +167,10 @@ export async function updateTicket(request: Request, response: Response) {
 export async function addComment(request: Request, response: Response) {
   const { id } = ticketIdParamsSchema.parse(request.params);
   const input = createCommentSchema.parse(request.body);
-  await findAccessibleTicket(id, request.user!);
+  const ticket = await findAccessibleTicket(id, request.user!);
 
-  const comment = await prisma.ticketComment.create({
+  const comment = await prisma.$transaction(async transaction => {
+    const created = await transaction.ticketComment.create({
     data: {
       content: input.content,
       ticketId: id,
@@ -163,6 +179,9 @@ export async function addComment(request: Request, response: Response) {
     include: {
       author: { select: { id: true, fullName: true, role: true } },
     },
+    });
+    await notifyTicket(transaction, ticket, request.user!.id, `Có bình luận mới trong yêu cầu #${id}.`);
+    return created;
   });
 
   response.status(201).json({ comment });

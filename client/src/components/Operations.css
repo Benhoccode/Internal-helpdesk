@@ -1,0 +1,20 @@
+.notification-container{position:relative}
+.notification-trigger{position:relative}
+.notification-count{position:absolute;right:-4px;top:-4px;min-width:18px;border-radius:20px;background:#dc2626;color:white;font-size:.65rem;padding:2px 4px}
+.notification-panel{position:absolute;right:0;top:45px;width:390px;max-width:90vw;max-height:75vh;overflow:auto;padding:16px}
+.notification-panel header,.notification-panel footer{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.notification-panel h2{font-size:1.1rem;margin:0 0 10px}
+.notification-panel ul{list-style:none;padding:0}
+.notification-item{width:100%;border:0;border-bottom:1px solid #e2e8f0;background:white;padding:14px 10px;text-align:left;border-radius:6px}
+.notification-item.unread{background:#eff6ff}
+.notification-item span,.notification-item small{display:block}
+.notification-item small{color:#64748b;margin-top:8px}
+.operations-panel{padding:24px;display:grid;gap:14px}
+.operations-panel form,.operations-form{display:grid;gap:12px}
+.operations-table{overflow:auto}
+.operations-table table{width:100%;border-collapse:collapse}
+.operations-table td,.operations-table th{padding:12px;text-align:left;border-bottom:1px solid #e2e8f0}
+.operations-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.operations-dialog{border:0;border-radius:12px;padding:24px;width:min(480px,90vw)}
+.operations-dialog::backdrop{background:rgba(15,23,42,.6)}
+@media(max-width:600px){.notification-panel{position:fixed;top:76px;right:5vw}.operations-panel{padding:16px}}

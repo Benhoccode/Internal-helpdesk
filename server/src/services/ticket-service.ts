@@ -1,7 +1,7 @@
 import { prisma } from "../config/prisma.js";
 import {
-  TicketStatus,
   UserRole,
+  type TicketStatus,
   type TicketPriority,
 } from "../generated/prisma/client.js";
 import { AppError } from "../utils/app-error.js";
@@ -50,15 +50,7 @@ export async function findAccessibleTicket(
   return ticket;
 }
 
-export function resolvedAtForStatus(
-  currentStatus: TicketStatus,
-  nextStatus: TicketStatus | undefined,
-) {
-  if (!nextStatus || nextStatus === currentStatus) return undefined;
-  if (nextStatus === TicketStatus.RESOLVED) return new Date();
-  if (currentStatus === TicketStatus.RESOLVED) return null;
-  return undefined;
-}
+export { resolvedAtForStatus } from "./ticket-workflow.js";
 
 export type TicketListFilters = {
   status?: TicketStatus;

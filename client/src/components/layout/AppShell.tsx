@@ -1,4 +1,5 @@
-import { Bell, HelpCircle, LogOut, Menu, Plus, X } from 'lucide-react'
+import { HelpCircle, LogOut, Menu, Plus, X } from 'lucide-react'
+import { NotificationBell } from '../NotificationBell'
 import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { navigationItems } from '../../data/navigation'
@@ -83,9 +84,7 @@ export function AppShell({ appName = 'Helpdesk Pro' }: Readonly<AppShellProps>) 
             Tìm kiếm yêu cầu, bài viết...
           </div>
           <div className="topbar__actions">
-            <button className="icon-button" aria-label="Thông báo" disabled>
-              <Bell size={21} />
-            </button>
+            <NotificationBell />
             <button className="icon-button" aria-label="Trợ giúp" disabled>
               <HelpCircle size={21} />
             </button>

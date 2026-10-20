@@ -4,6 +4,8 @@ import { authRouter } from "./auth-routes.js";
 import { categoryRouter } from "./category-routes.js";
 import { dashboardRouter } from "./dashboard-routes.js";
 import { ticketRouter } from "./ticket-routes.js";
+import { userRouter } from "./user-routes.js";
+import { notificationRouter } from "./notification-routes.js";
 
 export const apiRouter = Router();
 
@@ -12,3 +14,5 @@ apiRouter.use("/auth", authRouter);
 apiRouter.use("/categories", categoryRouter);
 apiRouter.use("/dashboard", dashboardRouter);
 apiRouter.use("/tickets", ticketRouter);
+apiRouter.use("/users", userRouter);
+apiRouter.use("/notifications", notificationRouter);

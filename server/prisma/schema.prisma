@@ -46,6 +46,7 @@ model User {
   passwordHash String   @map("password_hash") @db.VarChar(255)
   role         UserRole @default(EMPLOYEE)
   isActive     Boolean  @default(true) @map("is_active")
+  tokenVersion Int      @default(0) @map("token_version")
 
   createdTickets     Ticket[]              @relation("TicketCreator")
   assignedTickets    Ticket[]              @relation("TicketAssignee")
@@ -53,6 +54,7 @@ model User {
   ticketStatusChanges TicketStatusHistory[]
   articles           Article[]
   attachments        TicketAttachment[]
+  notifications      Notification[]
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -96,6 +98,7 @@ model Ticket {
   comments      TicketComment[]
   statusHistory TicketStatusHistory[]
   attachments   TicketAttachment[]
+  notifications Notification[]
 
   resolvedAt DateTime? @map("resolved_at") @db.Timestamptz(6)
   createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -106,6 +109,20 @@ model Ticket {
   @@index([categoryId])
   @@index([status, priority])
   @@map("tickets")
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  recipientId Int      @map("recipient_id")
+  recipient   User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  ticketId    Int      @map("ticket_id")
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  message     String   @db.VarChar(500)
+  readAt      DateTime? @map("read_at") @db.Timestamptz(6)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([recipientId, readAt, createdAt])
+  @@map("notifications")
 }
 
 model TicketAttachment {

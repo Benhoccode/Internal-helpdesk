@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
+import { z } from "zod";
+import { passwordSchema } from "../validators/user-validator.js";
 import jwt, { type SignOptions } from "jsonwebtoken";
 import { env } from "../config/env.js";
 import { prisma } from "../config/prisma.js";
@@ -33,7 +35,7 @@ export async function login(request: Request, response: Response) {
     subject: String(user.id),
     expiresIn: env.jwtExpiresIn as SignOptions["expiresIn"],
   };
-  const token = jwt.sign({ role: user.role }, env.jwtSecret, signOptions);
+  const token = jwt.sign({ role: user.role, version: user.tokenVersion }, env.jwtSecret, signOptions);
 
   response.json({
     token,
@@ -59,4 +61,22 @@ export async function me(request: Request, response: Response) {
   }
 
   response.json({ user });
+}
+
+export async function changePassword(request: Request, response: Response) {
+  const input = z.object({
+    currentPassword: z.string().min(1).max(256),
+    newPassword: passwordSchema,
+  }).strict().parse(request.body);
+  const user = await prisma.user.findUnique({ where: { id: request.user!.id } });
+  if (!user || !await compare(input.currentPassword, user.passwordHash)) {
+    throw new AppError(400, "Mật khẩu hiện tại không đúng.");
+  }
+  if (await compare(input.newPassword, user.passwordHash)) throw new AppError(400, "Mật khẩu mới phải khác mật khẩu hiện tại.");
+  const result = await prisma.user.updateMany({
+    where: { id: user.id, tokenVersion: user.tokenVersion },
+    data: { passwordHash: await hash(input.newPassword, 12), tokenVersion: { increment: 1 } },
+  });
+  if (result.count !== 1) throw new AppError(409, "Tài khoản vừa thay đổi. Hãy đăng nhập lại.");
+  response.json({ message: "Đã đổi mật khẩu. Vui lòng đăng nhập lại." });
 }

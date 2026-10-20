@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test:attachments": "tsx --test tests/attachment-validation.test.ts tests/attachment-routes.test.ts",
+    "test:workflow": "tsx --test tests/workflow.test.ts",
+    "test:operations": "tsx tests/operations-integration.ts",
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",

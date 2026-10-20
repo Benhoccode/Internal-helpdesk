@@ -4,9 +4,10 @@ import { Link, useParams } from 'react-router-dom'
 import { addTicketComment, getCategories, getTicket, updateTicket } from '../api/ticket-api'
 import { StatusBadge } from '../components/ui/StatusBadge'
 import { TicketAttachments } from '../components/TicketAttachments'
+import { apiRequest } from '../api/client'
 import { priorityLabels, statusLabels } from '../data/navigation'
 import { useAuth } from '../hooks/use-auth'
-import type { Category, Ticket, TicketPriority, TicketStatus } from '../types'
+import type { Category, Ticket, TicketPriority, TicketStatus, UserSummary } from '../types'
 import { formatDate, formatTicketId, getInitials } from '../utils/format'
 
 export function TicketDetailPage() {
@@ -14,6 +15,7 @@ export function TicketDetailPage() {
   const ticketId = Number(id)
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [categories, setCategories] = useState<Category[]>([])
+  const [assignees, setAssignees] = useState<UserSummary[]>([])
   const [comment, setComment] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -40,6 +42,14 @@ export function TicketDetailPage() {
     return () => { active = false }
   }, [ticketId])
   useEffect(() => { if (user?.role === 'ADMIN') getCategories().then(({ categories: data }) => setCategories(data)).catch(() => undefined) }, [user?.role])
+  useEffect(() => {
+    if (user?.role !== 'ADMIN') return
+    let active = true
+    apiRequest<{ users: UserSummary[] }>('/users/assignees')
+      .then(data => { if (active) setAssignees(data.users) })
+      .catch(() => { if (active) setError('Không thể tải danh sách người hỗ trợ. Hãy tải lại trang.') })
+    return () => { active = false }
+  }, [user?.role])
 
   const updateField = async (input: { status?: TicketStatus; priority?: TicketPriority; categoryId?: number; assigneeId?: number | null }) => {
     setSaving(true)
@@ -47,7 +57,7 @@ export function TicketDetailPage() {
     try {
       const result = await updateTicket(ticketId, input)
       setTicket(result.ticket)
-    } catch { setError('Không thể cập nhật yêu cầu') }
+    } catch (err) { setError(err instanceof Error ? err.message : 'Không thể cập nhật yêu cầu') }
     finally { setSaving(false) }
   }
 
@@ -65,6 +75,10 @@ export function TicketDetailPage() {
 
   if (error && !ticket) return <div className="form-error">{error}</div>
   if (!ticket) return <div className="state-message">Đang tải chi tiết yêu cầu...</div>
+  const transitions: Record<TicketStatus, TicketStatus[]> = {
+    OPEN: ['IN_PROGRESS'], IN_PROGRESS: ['RESOLVED'],
+    RESOLVED: ['CLOSED', 'IN_PROGRESS'], CLOSED: ['IN_PROGRESS'],
+  }
 
   return (
     <div className="page-stack">
@@ -94,9 +108,9 @@ export function TicketDetailPage() {
         <aside className="ticket-detail-sidebar">
           <section className="panel detail-controls"><h2>Chi tiết yêu cầu</h2>
             {user?.role === 'ADMIN' ? <>
-              <label>Trạng thái<select disabled={saving} value={ticket.status} onChange={(event) => void updateField({ status: event.target.value as TicketStatus })}>{Object.entries(statusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+              <label>Trạng thái<select disabled={saving} value={ticket.status} onChange={(event) => void updateField({ status: event.target.value as TicketStatus })}>{[ticket.status, ...transitions[ticket.status]].map(value => <option key={value} value={value}>{statusLabels[value]}</option>)}</select></label>
               <label>Mức độ ưu tiên<select disabled={saving} value={ticket.priority} onChange={(event) => void updateField({ priority: event.target.value as TicketPriority })}>{Object.entries(priorityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-              <label>Người xử lý<select disabled={saving} value={ticket.assigneeId ?? ''} onChange={(event) => void updateField({ assigneeId: event.target.value ? Number(event.target.value) : null })}><option value="">Chưa giao</option><option value={user.id}>Giao cho tôi</option>{ticket.assignee && ticket.assignee.id !== user.id && <option value={ticket.assignee.id}>{ticket.assignee.fullName}</option>}</select></label>
+              <label>Người xử lý<select disabled={saving} value={ticket.assigneeId ?? ''} onChange={(event) => void updateField({ assigneeId: event.target.value ? Number(event.target.value) : null })}><option value="">Chưa giao</option>{assignees.map(person => <option key={person.id} value={person.id}>{person.fullName}{person.id === user.id ? ' (Tôi)' : ''}</option>)}{ticket.assignee && !assignees.some(person => person.id === ticket.assigneeId) && <option value={ticket.assignee.id} disabled>{ticket.assignee.fullName} (không khả dụng)</option>}</select></label>
               <label>Danh mục<select disabled={saving} value={ticket.categoryId} onChange={(event) => void updateField({ categoryId: Number(event.target.value) })}>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
             </> : <div className="detail-readonly"><div><span>Trạng thái</span><StatusBadge value={ticket.status} /></div><div><span>Ưu tiên</span><StatusBadge value={ticket.priority} kind="priority" /></div><div><span>Danh mục</span><strong>{ticket.category.name}</strong></div></div>}
           </section>

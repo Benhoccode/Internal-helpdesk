@@ -12,6 +12,8 @@ import { LoginPage } from './pages/LoginPage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { TicketDetailPage } from './pages/TicketDetailPage'
 import { TicketListPage } from './pages/TicketListPage'
+import { UserManagementPage } from './pages/UserManagementPage'
+import { ChangePasswordPage } from './pages/ChangePasswordPage'
 import './App.css'
 
 function App() {
@@ -26,9 +28,11 @@ function App() {
               <Route path="tickets" element={<TicketListPage />} />
               <Route path="tickets/new" element={<CreateTicketPage />} />
               <Route path="tickets/:id" element={<TicketDetailPage />} />
+              <Route path="account/password" element={<ChangePasswordPage />} />
               <Route path="knowledge" element={<KnowledgePage />} />
               <Route path="knowledge/:slug" element={<ArticleDetailPage />} />
               <Route element={<AdminRoute />}>
+                <Route path="users" element={<UserManagementPage />} />
                 <Route path="knowledge/manage" element={<KnowledgePage management />} />
                 <Route path="knowledge/new" element={<ArticleFormPage />} />
                 <Route path="knowledge/:slug/edit" element={<ArticleFormPage />} />

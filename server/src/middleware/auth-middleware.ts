@@ -6,6 +6,7 @@ import { AppError } from "../utils/app-error.js";
 
 interface AuthTokenPayload {
   sub: string;
+  version?: number;
 }
 
 export const authenticate: RequestHandler = async (request, _response, next) => {
@@ -32,10 +33,10 @@ export const authenticate: RequestHandler = async (request, _response, next) => 
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, role: true, isActive: true },
+    select: { id: true, role: true, isActive: true, tokenVersion: true },
   });
 
-  if (!user || !user.isActive) {
+  if (!user || !user.isActive || (payload.version ?? 0) !== user.tokenVersion) {
     return next(new AppError(401, "The authenticated user is unavailable"));
   }
 
