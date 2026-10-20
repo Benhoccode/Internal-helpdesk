@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { apiRequest } from '../api/client'
+import { AttachmentPreview } from './AttachmentPreview'
 import './TicketAttachments.css'
 
 interface Attachment {
   id: number
   originalName: string
+  mimeType: string
   size: number
   createdAt: string
   uploadedBy: { fullName: string }
@@ -16,6 +18,7 @@ export function TicketAttachments({ ticketId }: { ticketId: number }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
+  const [preview, setPreview] = useState<Attachment | null>(null)
   const input = useRef<HTMLInputElement>(null)
   const base = `/tickets/${ticketId}/attachments`
 
@@ -74,15 +77,21 @@ export function TicketAttachments({ ticketId }: { ticketId: number }) {
     {message && <p role="status">{message}</p>}
     {loading ? <p>Đang tải danh sách tệp…</p> : attachments.length === 0 ? <p>Chưa có tệp đính kèm.</p> :
       <ul className="attachment-list">{attachments.map(file => <li key={file.id}>
-        <div><strong>{file.originalName}</strong>
+        <div>{['image/png', 'image/jpeg'].includes(file.mimeType)
+          ? <button className="attachment-name" type="button" onClick={() => setPreview(file)} title="Bấm để xem ảnh">{file.originalName}</button>
+          : <strong>{file.originalName}</strong>}
           <small>{(file.size / 1024).toFixed(1)} KB · {file.uploadedBy.fullName} · {new Date(file.createdAt).toLocaleString('vi-VN')}</small>
         </div>
-        <button type="button" onClick={() => void download(file.id)}>Tải xuống</button>
+        <div className="attachment-actions">
+          {['image/png', 'image/jpeg'].includes(file.mimeType) && <button type="button" onClick={() => setPreview(file)}>Xem ảnh</button>}
+          <button type="button" onClick={() => void download(file.id)}>Tải xuống</button>
+        </div>
       </li>)}</ul>}
     <form onSubmit={upload} className="attachment-form">
       <label htmlFor="attachment-files">Chọn tệp đính kèm</label>
       <input id="attachment-files" ref={input} type="file" multiple accept=".png,.jpg,.jpeg,.pdf,.txt,.log" disabled={busy} />
       <button type="submit" disabled={busy || loading}>{busy ? 'Đang tải lên…' : 'Tải tệp lên'}</button>
     </form>
+    {preview && <AttachmentPreview key={preview.id} ticketId={ticketId} attachmentId={preview.id} name={preview.originalName} onClose={() => setPreview(null)} />}
   </section>
 }

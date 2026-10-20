@@ -84,6 +84,43 @@ attachmentRouter.post("/", (_req, _res, next) => {
   }
 }));
 
+attachmentRouter.get("/:attachmentId/preview", asyncHandler(async (req, res) => {
+  const id = Number(req.params.attachmentId);
+  if (!Number.isSafeInteger(id) || id < 1) throw new AppError(400, "Mã tệp không hợp lệ.");
+  const file = await prisma.ticketAttachment.findFirst({ where: { id, ticketId: Number(req.params.id) } });
+  if (!file) throw new AppError(404, "Không tìm thấy tệp.");
+  if (!["image/png", "image/jpeg"].includes(file.mimeType)) throw new AppError(415, "Chỉ hỗ trợ xem trước ảnh PNG/JPG.");
+  const url = storage().utils.private_download_url(file.publicId, "", {
+    resource_type: "raw", type: "authenticated", attachment: false,
+    expires_at: Math.floor(Date.now() / 1000) + 60,
+  });
+  // Proxy private raw assets with the validated image MIME type; no public URL or CORS dependency.
+  try {
+    const upstream = await fetch(url, { signal: AbortSignal.timeout(30000) });
+    if (!upstream.ok || !upstream.body) throw new Error("Storage unavailable");
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    const reader = upstream.body.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.length;
+        if (total > MAX_FILE_SIZE) throw new Error("Image too large");
+        chunks.push(value);
+      }
+    } finally { await reader.cancel(); }
+    res.set({
+      "Content-Type": file.mimeType,
+      "Content-Disposition": "inline",
+      "Cache-Control": "private, no-store",
+      "X-Content-Type-Options": "nosniff",
+    }).send(Buffer.concat(chunks));
+  } catch {
+    throw new AppError(502, "Không thể tải ảnh xem trước. Vui lòng thử lại.");
+  }
+}));
+
 attachmentRouter.get("/:attachmentId/download", asyncHandler(async (req, res) => {
   const id = Number(req.params.attachmentId);
   if (!Number.isSafeInteger(id) || id < 1) throw new AppError(400, "Mã tệp không hợp lệ.");

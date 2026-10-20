@@ -20,6 +20,7 @@ test("attachment routes with mocked database and storage (no external writes)", 
   let uploaded = 0;
   let destroyed = 0;
   let accessWhere: unknown;
+  let previewMime = "image/png";
   // Prisma delegates are proxies; assign stubs instead of descriptor-based mock.method.
   const db = prisma as any;
   db.ticket.findFirst = async (args: { where: unknown }) => {
@@ -27,7 +28,7 @@ test("attachment routes with mocked database and storage (no external writes)", 
   };
   db.ticketAttachment.findMany = async () => [];
   db.ticketAttachment.create = () => ({ id: 1 });
-  db.ticketAttachment.findFirst = async () => ({ publicId: "test/a.log" });
+  db.ticketAttachment.findFirst = async () => ({ publicId: "test/a.log", mimeType: previewMime });
   db.$transaction = async () => {
     if (failDatabase) throw new Error("simulated database failure");
     return [{ id: 1 }];
@@ -36,6 +37,15 @@ test("attachment routes with mocked database and storage (no external writes)", 
     new Writable({ write(_chunk, _encoding, done) { done(); },
       final(done) { uploaded++; callback(null, { public_id: "test" }); done(); } }));
   mock.method(cloud.uploader, "destroy", async () => { destroyed++; return { result: "ok" }; });
+  const realFetch = globalThis.fetch;
+  let storageFails = false;
+  mock.method(globalThis, "fetch", (input: string | URL | Request, init?: RequestInit) => {
+    if (String(input).startsWith("https://api.cloudinary.com/")) {
+      return Promise.resolve(storageFails ? new Response("Unavailable", { status: 503 })
+        : new Response(new Uint8Array([137,80,78,71,13,10,26,10])));
+    }
+    return realFetch(input, init);
+  });
 
   const app = express();
   app.use((req, _res, next) => { req.user = { id: 7, role: "EMPLOYEE" }; next(); });
@@ -59,6 +69,7 @@ test("attachment routes with mocked database and storage (no external writes)", 
       assert.equal((await fetch(base, { method: "POST", body: form() })).status, 404);
       assert.equal(uploaded, 0);
       assert.equal((await fetch(base + "/1/download")).status, 404);
+      assert.equal((await fetch(base + "/1/preview")).status, 404);
       allowed = true;
     });
     await t.test("upload persists metadata", async () => {
@@ -83,6 +94,24 @@ test("attachment routes with mocked database and storage (no external writes)", 
       const remaining = Number(url.searchParams.get("expires_at")) - Date.now() / 1000;
       assert.ok(remaining > 50 && remaining <= 60);
       assert.equal(response.headers.get("cache-control"), "no-store");
+    });
+    await t.test("preview returns private inline image bytes", async () => {
+      const response = await fetch(base + "/1/preview");
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get("content-type"), "image/png");
+      assert.equal(response.headers.get("content-disposition"), "inline");
+      assert.equal(response.headers.get("cache-control"), "private, no-store");
+      assert.equal((await response.arrayBuffer()).byteLength, 8);
+    });
+    await t.test("preview rejects non-image files and invalid IDs", async () => {
+      previewMime = "text/plain";
+      assert.equal((await fetch(base + "/1/preview")).status, 415);
+      assert.equal((await fetch(base + "/abc/preview")).status, 400);
+      previewMime = "image/png";
+    });
+    await t.test("preview handles storage failure", async () => {
+      storageFails = true;
+      assert.equal((await fetch(base + "/1/preview")).status, 502);
     });
   } finally {
     server.closeAllConnections();

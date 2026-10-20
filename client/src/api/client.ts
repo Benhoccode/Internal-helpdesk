@@ -1,5 +1,18 @@
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api'
 
+export async function apiBlobRequest(path: string, signal?: AbortSignal): Promise<Blob> {
+  const token = localStorage.getItem('helpdesk_token')
+  const response = await fetch(`${API_URL}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    signal,
+  })
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({})) as { message?: string }
+    throw new Error(data.message ?? 'Không thể tải ảnh xem trước.')
+  }
+  return response.blob()
+}
+
 export class ApiError extends Error {
   readonly status: number
   readonly details?: unknown
